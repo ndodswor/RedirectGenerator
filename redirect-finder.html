@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Redirect Generator for DudaMobile</title>
+	<meta name="robots" content="noindex, nofollow">
+	<link rel="stylesheet" type="text/css" href="css/redirect-finder.css">
+	<script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+</head>
+<body>
+	<section id="options">
+		<h1>Redirect Generator for DudaMobile</h1>
+		<div id='languageDiv'>
+			<select id="languageSelect" name="language">
+				<option value="javascript"  selected>Javascript</option>
+				<option value="fullScript" >Full Javascript</option>
+				<option value="php" >PHP</option>
+				<option value="asp" >ASP</option>
+				<option value="htaccess" >.HTACCESS</option>
+			</select>
+		</div>
+		<div id='desktopUrlDiv'>Desktop URL: http://<input type="text" id="desktopUrl" name="URL"></div>
+		<div id='UrlDiv'>Mobile URL: http://<input type="text" id="URL" name="URL"></div>
+		<div id='whitelabeledDiv'><input type="checkbox" id="whitelabeled" name="whitelabeled">Whitelabeled</div>
+		<div id='cookiesDiv'><input type="checkbox" id="cookies" name="cookies">Cookies</div>
+		<div id='frameBreakDiv'><input type="checkbox" id="frameBreak" name="frameBreak">Frame Breaker</div>
+		<div id='httpsDiv'><input type="checkbox" id="https" name="https">HTTPS</div>
+	</section>
+	<section id="script">
+	</section>
+	<script src="js/redirect-finder.js"></script>
+</body>
+</html>
