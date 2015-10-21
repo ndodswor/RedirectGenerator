@@ -21,7 +21,8 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
     var finalScript = "";
     var javascript_template_script = '<script type="text/javascript" src="[SCRIPT_URL_PLACEHOLDER][SCRIPT_COOKIES_PLACEHOLDER].js"></script>' + '\n' +
                         '<script type="text/javascript">[FUNCTION_NAME_PLACEHOLDER]("http://[SITE_URL_PLACEHOLDER]");</script>';
-      var full_javascript_template_script = '<script type="text/javascript">[COOKIES_ADDED_PLACEHOLDER] ' + '\n' +
+      var full_javascript_template_script = '<script type="text/javascript">' + '\n' +
+                         '[COOKIES_ADDED_PLACEHOLDER]' + 
                          'function [FUNCTION_NAME_PLACEHOLDER](MobileURL, Home){ ' + '\n' +
                          'try { ' + '\n' +
                          'if(document.getElementById("dmRoot") != null) ' + '\n' +
@@ -32,14 +33,13 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
                          'var noredirect = document.location.search; ' + '\n' +
                          '[COOKIES_ADDED_PLACEHOLDER_START]' +
                          'if (noredirect.indexOf("no_redirect=true") < 0){ ' + '\n' +
-                         'if ((navigator.userAgent.match(/(iPhone|iPod|BlackBerry|Android.*Mobile|BB10.*Mobile|webOS|Windows CE' + '\n' +
-                         '|IEMobile|Opera Mini|Opera Mobi|HTC|LG-|LGE|SAMSUNG|Samsung|SEC-SGH|Symbian|Nokia|PlayStation|' + '\n' +
+                         'if ((navigator.userAgent.match(/(iPhone|iPod|BlackBerry|Android.*Mobile|BB10.*Mobile|webOS|Windows CE' +
+                         '|IEMobile|Opera Mini|Opera Mobi|HTC|LG-|LGE|SAMSUNG|Samsung|SEC-SGH|Symbian|Nokia|PlayStation|' + 
                          'PLAYSTATION|Nintendo DSi)/i)) ) { ' + '\n' +
                          'if(Home){ ' + '\n' +
                          'location.replace(MobileURL + "?utm_referrer=" + document.referrer); ' + '\n' +
                          '} ' + '\n' +
-                         'else ' + '\n' +
-                         '{ ' + '\n' +
+                         'else {' + '\n' +
                          'location.replace(MobileURL + "?url=" + encodeURIComponent(CurrentUrl) + "&utm_referrer=" + document.referrer); ' + '\n' +
                          '} ' + '\n' +
                          '} ' + '\n' +
@@ -55,9 +55,9 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
                          'var expire = new Date(); ' + '\n' +
                          'if (nSeconds==null || nSeconds==0) nSeconds=1000; ' + '\n' +
                          'expire.setTime(today.getTime() + 1000*nSeconds); ' + '\n' +
-                         'document.cookie = cookieName+"="+escape(cookieValue) ' + '\n' +
-                         '+ ";expires="+expire.toGMTString() + ";path=/;"; ' + '\n' +
-                         '} ';
+                         'document.cookie = cookieName+"="+escape(cookieValue) + ' + '\n' +
+                         '";expires="+expire.toGMTString() + ";path=/;"; ' + '\n' +
+                         '} ' + '\n';
     var cookies_added_placeholder_start = 'if(document.cookie.indexOf("dmNoRedirect") < 0) {' + '\n';
     var cookies_added_placeholder_end = '}' + '\n' + 
                          'else { ' + '\n' + 
@@ -66,8 +66,7 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
     var php_template_script = '<?php' + '\n' +
                         '$mobileDomain = "http://[SITE_URL_PLACEHOLDER]";' + '\n' +
                         '$no_redirect = @$_REQUEST[\'no_redirect\'];' + '\n' +
-                        'if($no_redirect != "true")' + '\n' +
-                        '{' + '\n' +
+                        'if($no_redirect != "true") {' + '\n' +
                             '$agent = @$_SERVER[\'HTTP_USER_AGENT\'];' + '\n' +
                             '@ini_set(\'default_socket_timeout\',1);' + '\n' +
                             '$handle = @fopen("http://mobile.[DUDAMOBILE_API_PLACEHOLDER].com/api/public/detect?ua=" . urlencode($agent), "r");' + '\n' +
