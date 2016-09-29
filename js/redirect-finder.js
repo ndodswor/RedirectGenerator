@@ -14,13 +14,43 @@ function htmlEscape(str) {
             .replace(/>/g, '&gt;');
 }
 
+//get url parameters (credit: weltraumpirat)
+function getSearchParameters() {
+      var prmstr = window.location.search.substr(1);
+      return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
+}
+
+function transformToAssocArray( prmstr ) {
+    var params = {};
+    var prmarr = prmstr.split("&");
+    for ( var i = 0; i < prmarr.length; i++) {
+        var tmparr = prmarr[i].split("=");
+        params[tmparr[0]] = tmparr[1];
+    }
+    return params;
+}
+
 //generates the correct redirect script for the boxes checked
-function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, frameBreaker, https){
+function generatePermalink(url, desktopUrl, language, whitelabeled, cookies, frameBreaker, https, commaTrue){
+    var permalink = '';
+    permalink = permalink + '?url=' + url;
+    permalink = permalink + '&lang=' + language;
+    permalink = permalink + (whitelabeled == true ? '&wl': '');
+    permalink = permalink + (cookies == true ? '&cookies': '');
+    permalink = permalink + (frameBreaker == true ? '&fb': '');
+    permalink = permalink + (https == true ? '&https': '');
+    permalink = permalink + (commaTrue == true ? '&ct': '');
+    permalinkHTML = "<a href='" + permalink + "'>Permalink</a>";
+    return permalink;
+}
+
+//generates the correct redirect script for the boxes checked
+function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, frameBreaker, https, commaTrue){
     'use strict';
     //set base variables
     var finalScript = "";
     var javascript_template_script = '<script type="text/javascript" src="[SCRIPT_URL_PLACEHOLDER][SCRIPT_COOKIES_PLACEHOLDER].js"></script>' + '\n' +
-                        '<script type="text/javascript">[FUNCTION_NAME_PLACEHOLDER]("http://[SITE_URL_PLACEHOLDER]");</script>';
+                        '<script type="text/javascript">[FUNCTION_NAME_PLACEHOLDER]("http://[SITE_URL_PLACEHOLDER]"[COMMA_TRUE_PLACEHOLDER]);</script>';
       var full_javascript_template_script = '<script type="text/javascript">' + '\n' +
                          '[COOKIES_ADDED_PLACEHOLDER]' + 
                          'function [FUNCTION_NAME_PLACEHOLDER](MobileURL, Home){ ' + '\n' +
@@ -49,7 +79,7 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
                          'catch(err){} ' + '\n' +
                          '} ' + '\n' +
                          '</script> ' + '\n' +
-                         '<script type="text/javascript">[FUNCTION_NAME_PLACEHOLDER]("http://[SITE_URL_PLACEHOLDER]");</script> ';
+                         '<script type="text/javascript">[FUNCTION_NAME_PLACEHOLDER]("http://[SITE_URL_PLACEHOLDER]"[COMMA_TRUE_PLACEHOLDER]);</script> ';
       var cookies_added_script = 'function DM_setCookie(cookieName,cookieValue,nSeconds) {' + '\n' +
                          'var today = new Date(); ' + '\n' +
                          'var expire = new Date(); ' + '\n' +
@@ -75,13 +105,14 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
                             '@fclose($handle);' + '\n' +
                             'if ($result == "y") {' + '\n' +
                                 '$currenturl = "http://".$_SERVER[\'SERVER_NAME\'].$_SERVER[\'REQUEST_URI\'];' + '\n' +
-                                '$mobileUrl = $mobileDomain ."?url=" .urlencode($currenturl);' + '\n' +
+                                '$mobileUrl = $mobileDomain[COMMA_TRUE_PLACEHOLDER];' + '\n' +
                                 '$mobileUrl=$mobileUrl."&dm_redirected=true";' + '\n' +
                                 'header("Location: ".$mobileUrl);' + '\n' +
                                 'exit;' + '\n' +
                             '}' + '\n' +
                         '}' + '\n' +
                         '?>';
+    var php_no_comma_true_placeholder = ' . "?url=" .urlencode($currenturl)';
     var asp_template_script = '<%Dim no_redirect, detecturl, handle, output, currenturl, mobileUrl' + '\n' +
                         'no_redirect = Request.QueryString("no_redirect")' + '\n' +
                         'If no_redirect <> "true" Then' + '\n' +
@@ -92,12 +123,13 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
                         'handle.open "GET", detecturl, false' + '\n' +
                         'handle.send ""' + '\n' +
                         'output = handle.responseText' + '\n' +
-                        'mobileUrl = "http://[SITE_URL_PLACEHOLDER]" & "?url=" & Server.UrlEncode(currenturl) & "&dm_redirected=true"' + '\n' +
+                        'mobileUrl = "http://[SITE_URL_PLACEHOLDER]" & "?[COMMA_TRUE_PLACEHOLDER]dm_redirected=true"' + '\n' +
                         'If output = "y" Then' + '\n' +
                         'Response.Redirect(mobileUrl)' + '\n' +
                         'End If' + '\n' +
                         'End If' + '\n' +
                         '%>';
+    var asp_no_comma_true_placeholder = 'url=" & Server.UrlEncode(currenturl) & "&';
     var jsp_template_script = '<%@page import="java.net.URLEncoder"%>' + '\n' +
                         '<%@page import="java.net.URL"%>' + '\n' +
                         '<%@page import="java.net.HttpURLConnection"%>' + '\n' +
@@ -114,7 +146,7 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
                         'if(c == \'y\')' + '\n' +
                         '{' + '\n' +
                         'String mobileUrl = "http://[SITE_URL_PLACEHOLDER]";' + '\n' +
-                        'response.sendRedirect(mobileUrl + "?url=" + URLEncoder.encode(currenturl) + "&dm_redirected=true");' + '\n' +
+                        'response.sendRedirect(mobileUrl + "?[COMMA_TRUE_PLACEHOLDER]dm_redirected=true");' + '\n' +
                         '}' + '\n' +
                         '}' + '\n' +
                         'catch(Exception e){' + '\n' +
@@ -122,6 +154,7 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
                         '}' + '\n' +
                         '}' + '\n' +
                         '%>';
+    var jsp_no_comma_true_placeholder = 'url=" + URLEncoder.encode(currenturl) + "&';
     var htaccess_template_script = 'RewriteEngine on' + '\n' +
                         '######### Set cookie for users who return to desktop site' + '\n' +
                         'RewriteBase /' + '\n' +
@@ -145,6 +178,7 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
     var script_cookies_placeholder = "";
     var function_name_placeholder = "DM_redirect";
     var dudamobile_api_placeholder = "dudamobile";
+    var comma_true_placeholder = "";
 
     //-------javascript settings-------
     if(language === 'javascript' || language === 'fullScript')
@@ -153,6 +187,7 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
         $('#cookiesDiv').show();
         $('#frameBreakDiv').show();
         $('#httpsDiv').show();
+        $('#commaTrueDiv').show();
         $('#desktopUrlDiv').hide();
         //if cookies is checked, set the cookie variable
         if(cookies) {
@@ -184,6 +219,10 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
                 function_name_placeholder = "Mobile_redirect";
             }
         }
+        //if comma true is checked, set the comma true placeholder
+        if(commaTrue) {
+            comma_true_placeholder = ", true";
+        }
         //if the full script is enabled
         if(language === 'fullScript')
         {
@@ -204,6 +243,7 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
             }
             finalScript = full_javascript_template_script;
             finalScript = finalScript.replace(/\[FUNCTION_NAME_PLACEHOLDER\]/g, function_name_placeholder);
+            finalScript = finalScript.replace(/\[COMMA_TRUE_PLACEHOLDER\]/g, comma_true_placeholder);
             finalScript = finalScript.replace(/\[COOKIES_ADDED_PLACEHOLDER\]/g, script_cookies_placeholder);
             finalScript = finalScript.replace(/\[COOKIES_ADDED_PLACEHOLDER_START\]/g, cookies_added_placeholder_start);
             finalScript = finalScript.replace(/\[COOKIES_ADDED_PLACEHOLDER_END\]/g, cookies_added_placeholder_end);
@@ -216,6 +256,7 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
         {
             finalScript = javascript_template_script;
             finalScript = finalScript.replace(/\[FUNCTION_NAME_PLACEHOLDER\]/g, function_name_placeholder);
+            finalScript = finalScript.replace(/\[COMMA_TRUE_PLACEHOLDER\]/g, comma_true_placeholder);
             finalScript = finalScript.replace(/\[SCRIPT_COOKIES_PLACEHOLDER\]/g, script_cookies_placeholder);
             finalScript = finalScript.replace(/\[SCRIPT_URL_PLACEHOLDER\]/g, script_url_placeholder);
         }
@@ -231,15 +272,19 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
         switch(language) {
         case 'asp':
             finalScript = asp_template_script;
+            comma_true_placeholder = asp_no_comma_true_placeholder;
             break;
         case 'jsp':
             finalScript = jsp_template_script;
+            comma_true_placeholder = jsp_no_comma_true_placeholder;
             break;
         case 'htaccess':
+            $('#commaTrueDiv').hide();
             finalScript = htaccess_template_script;
             break;
         case 'php':
             finalScript = php_template_script;
+            comma_true_placeholder = php_no_comma_true_placeholder;
             break;
         default:
             finalScript = 'Error: Invalid language selected.';
@@ -257,47 +302,72 @@ function generateRedirect(url, desktopUrl, language, whitelabeled, cookies, fram
         if(whitelabeled) {
             dudamobile_api_placeholder = "mobilewebsiteserver";
         }
+        //set the comma true placeholder appropriately
+        if(commaTrue) {
+            comma_true_placeholder = "";
+        }
         //replace the API placeholder
         finalScript = finalScript.replace(/\[DUDAMOBILE_API_PLACEHOLDER\]/g, dudamobile_api_placeholder);
     }
     //replace the URL and format the script for display
     finalScript = finalScript.replace(/\[SITE_URL_PLACEHOLDER\]/g, url);
+    finalScript = finalScript.replace(/\[COMMA_TRUE_PLACEHOLDER\]/g, comma_true_placeholder);
     finalScript = htmlEscape(finalScript);
     finalScript = finalScript.replace(/\n/g, '<br>');
     return finalScript;
 }
 
-//Set up the button click on load
-$(document).ready(function () {
-    'use strict';
-    //call function on page load
+//generates new redirect script and permalink from variables
+function adjustParameters()
+{
     $("#script").html(generateRedirect($('#URL').val(), 
         $('#desktopUrl').val(),
         $('#languageSelect').val(),
         $('#whitelabeled').is(':checked'), 
         $('#cookies').is(':checked'), 
         $('#frameBreak').is(':checked'), 
-        $('#https').is(':checked')));
+        $('#https').is(':checked'),
+        $('#commaTrue').is(':checked'))
+    );
+    //generate the permalink and domain urls
+    var domain = window.location.protocol + '//' + window.location.hostname + window.location.pathname;
+    var permalink = generatePermalink($('#URL').val(), 
+        $('#desktopUrl').val(),
+        $('#languageSelect').val(),
+        $('#whitelabeled').is(':checked'), 
+        $('#cookies').is(':checked'), 
+        $('#frameBreak').is(':checked'), 
+        $('#https').is(':checked'),
+        $('#commaTrue').is(':checked')
+    );
+    //generate permalink html
+    var permalinkHTML = "<a href='" + domain + permalink + "'>Permalink</a>";
+    $("#permalink").html(permalinkHTML);
+    //replace the url with the permalink
+    history.replaceState({}, null, permalink);
+}
+
+//Set up the button click on load
+$(document).ready(function () {
+    'use strict';
+    //fill out parameters based on URL parameters on page load
+    var searchParameters = getSearchParameters();
+    $('#URL').val('url' in searchParameters ? searchParameters['url'] : 'placeholderurl.com');
+    $('#languageSelect').val('lang' in searchParameters ? searchParameters['lang'] : 'javascript');
+    document.getElementById('whitelabeled').checked = 'wl' in searchParameters ? true : false;
+    document.getElementById('cookies').checked = 'cookies' in searchParameters ? true : false;
+    document.getElementById('frameBreak').checked = 'fb' in searchParameters ? true : false;
+    document.getElementById('https').checked = 'https' in searchParameters ? true : false;
+    document.getElementById('commaTrue').checked = 'ct' in searchParameters ? true: false;
+    //call function on page load
+    adjustParameters();
     $("#options").on('change', 'input',function() {
         console.log("Fetching script...");
         //Generate the redirect from the checked boxes
-        $("#script").html(generateRedirect($('#URL').val(), 
-        $('#desktopUrl').val(),
-        $('#languageSelect').val(),
-        $('#whitelabeled').is(':checked'), 
-        $('#cookies').is(':checked'), 
-        $('#frameBreak').is(':checked'), 
-        $('#https').is(':checked')));
+        adjustParameters();
     });
     $("#options").on('change', 'select',function() {
         console.log("Fetching script...");
-        //Generate the redirect from the checked boxes
-        $("#script").html(generateRedirect($('#URL').val(), 
-        $('#desktopUrl').val(),
-        $('#languageSelect').val(),
-        $('#whitelabeled').is(':checked'), 
-        $('#cookies').is(':checked'), 
-        $('#frameBreak').is(':checked'), 
-        $('#https').is(':checked')));
+        adjustParameters();
     });
 });

@@ -8,10 +8,18 @@ h1{
 }
 
 section{
-	margin: 30px auto;
+	margin: 10px auto;
 	max-width: 800px;
 	min-width: 500px;
 	padding: 10px;
+	border-radius: 5px;
+}
+
+.proviso{
+	color: red;
+	background-color: yellow;
+	max-width: 500px;
+	padding: 5px;
 	border-radius: 5px;
 }
 
@@ -22,4 +30,14 @@ section{
 section#options div{
 	display:inline-block;
 	padding: 4px;
+}
+
+section#permalink a{
+	color: lightgreen;
+}
+
+section#permalink{
+margin-top: 10px;
+margin-bottom: 10px;
+padding: 0px;
 }
